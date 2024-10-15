@@ -151,15 +151,14 @@ class WizardApp(ctk.CTk):
         dir_entry.pack(pady=10)
 
     def page_summary(self):
-        windows, self.gitInstalled, self.dockerInstalled, self.wslInstalled = self.doChecks(self.host_var.get()==1)
+        windows = self.host_var.get()==1
+        self.gitInstalled = self.gitCheck(windows)
+        self.dockerInstalled = self.dockerCheck(windows)
+        self.wslInstalled = self.wslCheck()
         label = ctk.CTkLabel(self.content_frame, text="Ready to Install", font=ctk.CTkFont(size=18))
         label.pack(pady=50)
-        if(self.host_var.get()==1):
-            host="Windows"
-        else:
-            host="Linux"
 
-        summary = ctk.CTkLabel(self.content_frame, text=f"Selected host system: {host}")
+        summary = ctk.CTkLabel(self.content_frame, text=f"Selected host system: Windows" if windows else "Selected host system: Linux")
         summary.pack()
         summary = ctk.CTkLabel(self.content_frame, text="Git is installed and working" if self.gitInstalled else "Git not installed")
         summary.pack()
@@ -177,38 +176,45 @@ class WizardApp(ctk.CTk):
         complete_message = ctk.CTkLabel(self.content_frame, text="The installation was successful!")
         complete_message.pack()
 
-    def doChecks(self, windows):
-        gitInstalled = False
-        dockerInstalled = False
-        wslInstalled = False
-
+    def gitCheck(self, windows):
+        command = "git --version"
         if windows:
-            try:
-                ans = subprocess.Popen(["wsl", "cat", "/proc/version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                output, errors = ans.communicate()
-                match = re.search(r'WSL(\d+)', output)
-                if int(match.group(1)) == 2:
-                    wslInstalled = True
-            except:
-                pass
-        
+            command = "wsl git --version"
+        list = command.split(" ")
         try:
-            ans = subprocess.Popen(["git", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            ans = subprocess.Popen(list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             output, errors = ans.communicate()
-            gitInstalled = True
+            if "git version" in output:
+                return True
         except:
             pass
-
+        return False
+    
+    def wslCheck(self):
         try:
-            ans = subprocess.Popen(["docker", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            ans = subprocess.Popen(["wsl", "cat", "/proc/version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            output, errors = ans.communicate()
+            match = re.search(r'WSL(\d+)', output)
+            if int(match.group(1)) == 2:
+                return True
+        except:
+            pass
+        return False
+    
+    def dockerCheck(self, windows):
+        command = "docker --version"
+        if windows:
+            command = "wsl docker --version"
+        list = command.split(" ")
+        try:
+            ans = subprocess.Popen(list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             output, errors = ans.communicate()
             match = re.search(r'(\d+)\.', output)
             if int(match.group(1)) >= 24:
-                dockerInstalled = True
+                return True
         except:
             pass
-
-        return windows, gitInstalled, dockerInstalled, wslInstalled
+        return False
 
 
 if __name__ == "__main__":
