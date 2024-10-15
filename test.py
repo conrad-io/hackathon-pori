@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import customtkinter as ctk
 
 # Initialize the CustomTkinter theme
@@ -15,10 +16,13 @@ class WizardApp(ctk.CTk):
 
         # Step counter to track the current step
         self.current_step = 0
-        self.steps = [
-            "Welcome to the Custom Wizard!\nThis is Step 1: Introduction.",
-            "This is Step 2: Please fill in the details.",
-            "Step 3: Review your details and finish the wizard!"
+        # Page methods for each step
+        self.pages = [
+            self.page_welcome,
+            self.page_license,
+            self.page_installation_directory,
+            self.page_summary,
+            self.page_complete
         ]
 
         # Main layout: Create two main frames (Sidebar and Content)
@@ -43,74 +47,163 @@ class WizardApp(ctk.CTk):
 
         # Step labels in the sidebar
         self.step_labels = []
-        for i in range(len(self.steps)):
+        for i in range(len(self.pages)):
             step_label = ctk.CTkLabel(self.sidebar_frame, text=f"Step {i+1}", font=ctk.CTkFont(size=14))
             step_label.pack(pady=10)
             self.step_labels.append(step_label)
 
         # Wizard content (header and text)
-        self.header_label = ctk.CTkLabel(self.content_frame, text="Wizard Step 1", font=ctk.CTkFont(size=18, weight="bold"))
-        self.header_label.pack(pady=15)
+        # self.header_label = ctk.CTkLabel(self.content_frame, text="Wizard Step 1", font=ctk.CTkFont(size=18, weight="bold"))
+        # self.header_label.pack(pady=15)
 
-        self.content_label = ctk.CTkLabel(self.content_frame, text="", font=ctk.CTkFont(size=14), wraplength=450)
-        self.content_label.pack(pady=10)
+        # self.content_label = ctk.CTkLabel(self.content_frame, text="", font=ctk.CTkFont(size=14), wraplength=450)
+        # self.content_label.pack(pady=10)
 
         # Navigation buttons
+        # Navigation buttons
+        # self.back_button = ctk.CTkButton(self, text="Back", command=self.prev_page, state="disabled")
+        # self.next_button = ctk.CTkButton(self, text="Next", command=self.next_page)
+
+        # # Place buttons at the bottom
+        # self.back_button.pack(side="left", padx=20, pady=20)
+        # self.next_button.pack(side="right", padx=20, pady=20)
         self.button_frame = ctk.CTkFrame(self.content_frame)
         self.button_frame.pack(side="bottom", pady=20, fill="x")
 
-        self.back_button = ctk.CTkButton(self.button_frame, text="Back", command=self.back, state="disabled")
+        self.back_button = ctk.CTkButton(self.button_frame, text="Back", command=self.prev_page, state="disabled")
         self.back_button.pack(side="left", padx=10)
 
-        self.next_button = ctk.CTkButton(self.button_frame, text="Next", command=self.next)
+        self.next_button = ctk.CTkButton(self.button_frame, text="Next", command=self.next_page)
         self.next_button.pack(side="right", padx=10)
 
         # Initialize content and sidebar progress
-        self.update_content()
+        self.show_page()
 
-    def update_content(self):
-        """Update the content area and sidebar based on the current step."""
-        # Update the main content
-        self.header_label.configure(text=f"Wizard Step {self.current_step + 1}")
-        self.content_label.configure(text=self.steps[self.current_step])
+    def show_page(self):
+        # Clear the main frame
+        for widget in self.content_frame.winfo_children():
+            if widget != self.button_frame:
+                widget.destroy()
 
-        # Enable or disable back button based on step
-        self.back_button.configure(state="normal" if self.current_step > 0 else "disabled")
+        # Show the current step page
+        self.pages[self.current_step]()
+    
+    def next_page(self):
+        self.step_labels[self.current_step].configure(text_color="white")
+        self.current_step += 1
+        self.step_labels[self.current_step].configure(text_color="cyan")
 
-        # Change Next button to Finish on the last step
-        if self.current_step == len(self.steps) - 1:
+        if self.current_step == len(self.pages) - 1:
             self.next_button.configure(text="Finish", command=self.finish)
-        else:
-            self.next_button.configure(text="Next", command=self.next)
+        self.back_button.configure(state="normal")
 
-        # Update the sidebar to highlight the current step
-        for i, label in enumerate(self.step_labels):
-            if i == self.current_step:
-                label.configure(text_color="cyan")  # Highlight the current step
-            else:
-                label.configure(text_color="white")  # Reset others
+        self.show_page()
 
-    def next(self):
-        """Proceed to the next step."""
-        if self.current_step < len(self.steps) - 1:
-            self.current_step += 1
-            self.update_content()
+    def prev_page(self):
+        self.step_labels[self.current_step].configure(text_color="white")
+        self.current_step -= 1
+        self.step_labels[self.current_step].configure(text_color="cyan")
 
-    def back(self):
-        """Go to the previous step."""
-        if self.current_step > 0:
-            self.current_step -= 1
-            self.update_content()
+        if self.current_step == 0:
+            self.back_button.configure(state="disabled")
+        self.next_button.configure(state="normal")
+        self.next_button.configure(text="Next", command=self.next_page)
+
+        self.show_page()
 
     def finish(self):
-        """Complete the wizard."""
-        self.header_label.configure(text="Wizard Complete!")
-        self.content_label.configure(text="Thank you for completing the wizard.")
-        self.next_button.pack_forget()  # Hide Next/Finish button
-        self.back_button.pack_forget()  # Hide Back button
+        # Perform final actions, such as completing the installation
+        messagebox.showinfo("Installation Complete", "The installation was successful!")
+        self.quit()
 
+    # Define each page
+    def page_welcome(self):
+        self.step_labels[self.current_step].configure(text_color="cyan")
+        label = ctk.CTkLabel(self.content_frame, text="Welcome to the Installation Wizard", font=ctk.CTkFont(size=20, weight="bold"))
+        label.pack(pady=50)
+
+    def page_license(self):
+        label = ctk.CTkLabel(self.content_frame, text="Please accept the license agreement", font=ctk.CTkFont(size=18))
+        label.pack(pady=10)
+
+        license_text = ctk.CTkTextbox(self.content_frame, height=150, width=500)
+        license_text.insert("1.0", "License agreement text goes here...")
+        license_text.configure(state="disabled")
+        license_text.pack(pady=10)
+
+        accept_var = ctk.StringVar(value="0")
+        accept_check = ctk.CTkCheckBox(self.content_frame, text="I accept the terms and conditions", variable=accept_var)
+        accept_check.pack(pady=10)
+
+    def page_installation_directory(self):
+        label = ctk.CTkLabel(self.content_frame, text="Choose installation directory", font=ctk.CTkFont(size=18))
+        label.pack(pady=10)
+
+        dir_entry = ctk.CTkEntry(self.content_frame, width=400)
+        dir_entry.insert(0, "C:/Program Files/MyApp")
+        dir_entry.pack(pady=10)
+
+    def page_summary(self):
+        label = ctk.CTkLabel(self.content_frame, text="Ready to Install", font=ctk.CTkFont(size=18))
+        label.pack(pady=50)
+
+        summary = ctk.CTkLabel(self.content_frame, text="Installation directory: C:/Program Files/MyApp")
+        summary.pack()
+
+    def page_complete(self):
+        label = ctk.CTkLabel(self.content_frame, text="Installation Complete", font=ctk.CTkFont(size=20, weight="bold"))
+        label.pack(pady=50)
+
+        complete_message = ctk.CTkLabel(self.content_frame, text="The installation was successful!")
+        complete_message.pack()
 
 if __name__ == "__main__":
     app = WizardApp()
     app.mainloop()
+
+#     def update_content(self):
+#         """Update the content area and sidebar based on the current step."""
+#         # Update the main content
+#         self.header_label.configure(text=f"Wizard Step {self.current_step + 1}")
+#         self.content_label.configure(text=self.steps[self.current_step])
+
+#         # Enable or disable back button based on step
+#         self.back_button.configure(state="normal" if self.current_step > 0 else "disabled")
+
+#         # Change Next button to Finish on the last step
+#         if self.current_step == len(self.steps) - 1:
+#             self.next_button.configure(text="Finish", command=self.finish)
+#         else:
+#             self.next_button.configure(text="Next", command=self.next)
+
+#         # Update the sidebar to highlight the current step
+#         for i, label in enumerate(self.step_labels):
+#             if i == self.current_step:
+#                 label.configure(text_color="cyan")  # Highlight the current step
+#             else:
+#                 label.configure(text_color="white")  # Reset others
+
+#     def next(self):
+#         """Proceed to the next step."""
+#         if self.current_step < len(self.steps) - 1:
+#             self.current_step += 1
+#             self.update_content()
+
+#     def back(self):
+#         """Go to the previous step."""
+#         if self.current_step > 0:
+#             self.current_step -= 1
+#             self.update_content()
+
+#     def finish(self):
+#         """Complete the wizard."""
+#         self.header_label.configure(text="Wizard Complete!")
+#         self.content_label.configure(text="Thank you for completing the wizard.")
+#         self.next_button.pack_forget()  # Hide Next/Finish button
+#         self.back_button.pack_forget()  # Hide Back button
+
+
+# if __name__ == "__main__":
+#     app = WizardApp()
+#     app.mainloop()
 
