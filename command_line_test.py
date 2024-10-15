@@ -1,16 +1,27 @@
 import tkinter as tk
 import subprocess
+import threading
 
 def execute_command():
-    # Den eingegebenen Befehl aus dem Eingabefeld holen
     command = entry.get()
-    try:
-        # Den Befehl mit subprocess ausführen und das Ergebnis erfassen
-        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
-        result_label.config(text=output)  # Ergebnis anzeigen
-    except subprocess.CalledProcessError as e:
-        # Fehlerfall: Fehlerausgabe anzeigen
-        result_label.config(text=f"Error: {e.output}")
+    
+    def run_command():
+        # Erzeuge den Prozess und leite stdout und stderr zusammen
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+
+        # Kontinuierlich die Ausgabe lesen und im Label aktualisieren
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                # Ausgaben sammeln
+                current_text = result_label.cget("text")
+                result_label.config(text=current_text + output)
+
+    # Den Befehl in einem neuen Thread ausführen
+    thread = threading.Thread(target=run_command)
+    thread.start()
 
 # Hauptfenster erstellen
 root = tk.Tk()
