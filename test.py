@@ -10,6 +10,7 @@ class WizardApp(ctk.CTk):
         super().__init__()
         self.host_var = IntVar(value=0)
         # Window properties
+        self.iconbitmap("cropped-ACROBA_logo_icon_RVB-32x32.ico")
         self.title("ACROBA Platform Installation Wizard")
         self.geometry("700x400")  # Adjust width to accommodate sidebar
 
@@ -63,10 +64,10 @@ class WizardApp(ctk.CTk):
         self.button_frame = ctk.CTkFrame(self.content_frame)
         self.button_frame.pack(side="bottom", pady=20, fill="x")
 
-        self.back_button = ctk.CTkButton(self.button_frame, text="Back", command=self.prev_page, state="disabled", bg_color="#1E1F57", fg_color="#1E1F57")
+        self.back_button = ctk.CTkButton(self.button_frame, text="Back", command=self.prev_page, state="disabled", bg_color="#1E1F57", fg_color="#1E1F57", hover_color="#00207f")
         self.back_button.pack(side="left", padx=10)
 
-        self.next_button = ctk.CTkButton(self.button_frame, text="Next", command=self.next_page, bg_color="#1E1F57", fg_color="#1E1F57")
+        self.next_button = ctk.CTkButton(self.button_frame, text="Next", command=self.next_page, bg_color="#1E1F57", fg_color="#1E1F57", hover_color="#00207f")
         self.next_button.pack(side="right", padx=10)
 
         # Initialize content and sidebar progress
@@ -103,9 +104,10 @@ class WizardApp(ctk.CTk):
         self.show_page()
 
     def prev_page(self):
-        self.step_labels[self.current_step-1].configure(text_color="white")
-        self.current_step -= 1
         self.step_labels[self.current_step-1].configure(text_color="#1E1F57")
+        self.current_step -= 1
+        if(self.current_step != 0):
+            self.step_labels[self.current_step-1].configure(text_color="#8329f6")
 
         if self.current_step == 0:
             self.back_button.configure(state="disabled")
