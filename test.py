@@ -1,4 +1,4 @@
-from tkinter import messagebox
+from tkinter import messagebox,IntVar
 import customtkinter as ctk
 
 # Initialize the CustomTkinter theme
@@ -8,10 +8,9 @@ ctk.set_default_color_theme("blue")  # Other options: "green", "dark-blue"
 class WizardApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-
-
+        self.host_var = IntVar(value=0)
         # Window properties
-        self.title("Fancy Wizard Window with Progress Sidebar")
+        self.title("ACROBA Platform Installation Wizard")
         self.geometry("700x400")  # Adjust width to accommodate sidebar
 
         # Step counter to track the current step
@@ -19,7 +18,7 @@ class WizardApp(ctk.CTk):
         # Page methods for each step
         self.pages = [
             self.page_welcome,
-            self.page_license,
+            self.page_host_system,
             self.page_installation_directory,
             self.page_summary,
             self.page_complete
@@ -94,6 +93,9 @@ class WizardApp(ctk.CTk):
             self.next_button.configure(text="Finish", command=self.finish)
         self.back_button.configure(state="normal")
 
+        if self.current_step == 1 and self.host_var.get() == 0:
+            self.next_button.configure(state="disabled")
+
         self.show_page()
 
     def prev_page(self):
@@ -119,18 +121,18 @@ class WizardApp(ctk.CTk):
         label = ctk.CTkLabel(self.content_frame, text="Welcome to the Installation Wizard", font=ctk.CTkFont(size=20, weight="bold"))
         label.pack(pady=50)
 
-    def page_license(self):
-        label = ctk.CTkLabel(self.content_frame, text="Please accept the license agreement", font=ctk.CTkFont(size=18))
+    def page_host_system(self):
+        label = ctk.CTkLabel(self.content_frame, text="Please select your host system.", font=ctk.CTkFont(size=18))
         label.pack(pady=10)
 
-        license_text = ctk.CTkTextbox(self.content_frame, height=150, width=500)
-        license_text.insert("1.0", "License agreement text goes here...")
-        license_text.configure(state="disabled")
-        license_text.pack(pady=10)
+        radiobutton_1 = ctk.CTkRadioButton(self.content_frame, text="Windows", value=1, variable= self.host_var, command=self.toggle_RadioButton)
+        radiobutton_2 = ctk.CTkRadioButton(self.content_frame, text="Linux", value=2, variable= self.host_var, command=self.toggle_RadioButton)
 
-        accept_var = ctk.StringVar(value="0")
-        accept_check = ctk.CTkCheckBox(self.content_frame, text="I accept the terms and conditions", variable=accept_var)
-        accept_check.pack(pady=10)
+        radiobutton_1.pack(padx=20, pady=10)
+        radiobutton_2.pack(padx=20, pady=10)
+    
+    def toggle_RadioButton(self):
+        self.next_button.configure(state="normal")
 
     def page_installation_directory(self):
         label = ctk.CTkLabel(self.content_frame, text="Choose installation directory", font=ctk.CTkFont(size=18))
