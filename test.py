@@ -8,9 +8,10 @@ class WizardApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+
         # Window properties
         self.title("Fancy Wizard Window with Progress Sidebar")
-        self.geometry("700x400")  # Adjust width to accommodate sidebar
+        self.geometry("960x600")  # Adjust width to accommodate sidebar
 
         # Step counter to track the current step
         self.current_step = 0
@@ -24,12 +25,21 @@ class WizardApp(ctk.CTk):
         self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar_frame.pack(side="left", fill="y")
 
+        self.terminal_frame = ctk.CTkFrame(self, corner_radius=10)
+        self.terminal_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
+        
         self.content_frame = ctk.CTkFrame(self, corner_radius=10)
         self.content_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
+
+
 
         # Sidebar content (step labels)
         self.sidebar_label = ctk.CTkLabel(self.sidebar_frame, text="Steps", font=ctk.CTkFont(size=16, weight="bold"))
         self.sidebar_label.pack(pady=15)
+
+        # Terminal content example
+        self.terminal_label = ctk.CTkLabel(self.sidebar_frame, text="Steps", font=ctk.CTkFont(size=16, weight="bold"))
+        self.sidebar_label.pack(pady=10)
 
         # Step labels in the sidebar
         self.step_labels = []
