@@ -171,6 +171,16 @@ class WizardApp(ctk.CTk):
             summary = ctk.CTkLabel(self.content_frame, text="wsl is installed and working" if self.wslInstalled else "wsl not installed")
             summary.pack()
 
+    def notInstalledProgramm_installer(self):
+        if not self.gitInstalled:
+            
+            pass
+        if not self.dockerInstalled:
+            pass
+        if not self.wslInstalled:
+            pass
+        pass
+
 
     def clonePassword(self):
         # Just a label text
@@ -186,7 +196,7 @@ class WizardApp(ctk.CTk):
         button.pack(pady=10)
 
         # Button for installation
-        button2 = ctk.CTkButton(self.content_frame, text="pinstall acroba enviornment", font=ctk.CTkFont(size=18), command =lambda: self.run_command("yes | setup/setup.sh", result_text))
+        button2 = ctk.CTkButton(self.content_frame, text="pinstall acroba enviornment", font=ctk.CTkFont(size=18), command =lambda: self.run_command("echo y | setup/setup.sh", result_text))
         button2.pack(pady=10)
 
         
