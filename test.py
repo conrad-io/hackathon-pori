@@ -3,6 +3,8 @@ import subprocess
 from tkinter import messagebox,IntVar,PhotoImage,StringVar
 import customtkinter as ctk
 from PIL import Image
+import os
+
 # Initialize the CustomTkinter theme
 ctk.set_appearance_mode("Light")  # Options: "Light" or "Dark"
 ctk.set_default_color_theme("dark-blue")  # Other options: "green", "dark-blue"
@@ -12,7 +14,7 @@ class WizardApp(ctk.CTk):
         super().__init__()
         self.host_var = IntVar(value=0)
         # Window properties
-        self.iconbitmap("cropped-ACROBA_logo_icon_RVB-32x32.ico")
+        # self.iconbitmap("cropped-ACROBA_logo_icon_RVB-32x32.ico")
         self.title("ACROBA Platform Installation Wizard")
         self.geometry("700x400")  # Adjust width to accommodate sidebar
 
@@ -24,6 +26,7 @@ class WizardApp(ctk.CTk):
             self.page_host_system,
             self.page_git_password,
             self.page_summary,
+            self.clonePassword,
             self.page_complete
         ]
 
@@ -167,6 +170,25 @@ class WizardApp(ctk.CTk):
         if windows:
             summary = ctk.CTkLabel(self.content_frame, text="wsl is installed and working" if self.wslInstalled else "wsl not installed")
             summary.pack()
+
+
+    def clonePassword(self):
+        # Just a label text
+        label = ctk.CTkLabel(self.content_frame, text="password for the cloning process", font=ctk.CTkFont(size=18))
+        label.pack(pady=15)
+
+        # Terminal outputs are shown here
+        result_text = ctk.CTkTextbox(self.content_frame, height=100, width=320, state="disable")
+        result_text.pack(pady=2)
+
+        # Button for cloning
+        button = ctk.CTkButton(self.content_frame, text="pull git repository and enter password", font=ctk.CTkFont(size=18), command =lambda: self.pathexist("git clone --progress https://github.com/acroba-hackathon/setup.git", result_text))
+        button.pack(pady=10)
+
+        # Button for installation
+        button2 = ctk.CTkButton(self.content_frame, text="pinstall acroba enviornment", font=ctk.CTkFont(size=18), command =lambda: self.run_command("yes | setup/setup.sh", result_text))
+        button2.pack(pady=10)
+
         
 
     def page_complete(self):
@@ -176,6 +198,8 @@ class WizardApp(ctk.CTk):
         complete_message = ctk.CTkLabel(self.content_frame, text="The installation was successful!")
         complete_message.pack()
 
+
+    # Checking 
     def gitCheck(self, windows):
         command = "git --version"
         if windows:
@@ -215,6 +239,46 @@ class WizardApp(ctk.CTk):
         except:
             pass
         return False
+
+
+    def pathexist(self,command, result_text):
+        path = "setup"
+        
+        result_text.configure(state="normal")
+        result_text.delete(1.0, ctk.END)
+
+        if os.path.isdir(path):
+            result_text.insert(ctk.END, "already there")
+            result_text.update_idletasks() 
+            result_text.configure(state="disable")
+            return
+
+        self.run_command(command, result_text)
+
+    def run_command(self, command, result_text):
+        result_text.configure(state="normal")
+        result_text.delete(1.0, ctk.END)
+
+        # Use Popen with unbuffered output for real-time capturing
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        
+        # Capture stdout in real-time
+        for stdout_line in iter(process.stderr.readline, ""):
+            print(stdout_line)
+            result_text.insert(ctk.END, stdout_line)  # Insert the output into the text widget
+            result_text.see(ctk.END)  # Scroll to the end of the text widget
+            result_text.update_idletasks()  # Force GUI update
+
+        process.stdout.close()
+
+        # Capture any remaining stderr (errors)
+        stderr_output, _ = process.communicate()
+        if stderr_output:
+            result_text.insert(ctk.END, stderr_output)  # Insert errors into the text widget
+            result_text.see(ctk.END)
+            result_text.update_idletasks()  # Force GUI update
+
+        result_text.configure(state="disable")
 
 
 if __name__ == "__main__":
