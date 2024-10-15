@@ -79,7 +79,9 @@ class WizardApp(ctk.CTk):
         self.pages[self.current_step]()
     
     def next_page(self):
+        self.step_labels[self.current_step].configure(text_color="white")
         self.current_step += 1
+        self.step_labels[self.current_step].configure(text_color="cyan")
 
         if self.current_step == len(self.pages) - 1:
             self.next_button.configure(text="Finish", command=self.finish)
@@ -88,7 +90,9 @@ class WizardApp(ctk.CTk):
         self.show_page()
 
     def prev_page(self):
+        self.step_labels[self.current_step].configure(text_color="white")
         self.current_step -= 1
+        self.step_labels[self.current_step].configure(text_color="cyan")
 
         if self.current_step == 0:
             self.back_button.configure(state="disabled")
@@ -104,6 +108,7 @@ class WizardApp(ctk.CTk):
 
     # Define each page
     def page_welcome(self):
+        self.step_labels[self.current_step].configure(text_color="cyan")
         label = ctk.CTkLabel(self.content_frame, text="Welcome to the Installation Wizard", font=ctk.CTkFont(size=20, weight="bold"))
         label.pack(pady=50)
 
