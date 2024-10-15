@@ -1,3 +1,5 @@
+import re
+import subprocess
 from tkinter import messagebox,IntVar,PhotoImage,StringVar
 import customtkinter as ctk
 from PIL import Image
@@ -149,6 +151,7 @@ class WizardApp(ctk.CTk):
         dir_entry.pack(pady=10)
 
     def page_summary(self):
+        windows, self.gitInstalled, self.dockerInstalled, self.wslInstalled = self.doChecks(self.host_var.get()==1)
         label = ctk.CTkLabel(self.content_frame, text="Ready to Install", font=ctk.CTkFont(size=18))
         label.pack(pady=50)
         if(self.host_var.get()==1):
@@ -158,6 +161,14 @@ class WizardApp(ctk.CTk):
 
         summary = ctk.CTkLabel(self.content_frame, text=f"Selected host system: {host}")
         summary.pack()
+        summary = ctk.CTkLabel(self.content_frame, text="Git is installed and working" if self.gitInstalled else "Git not installed")
+        summary.pack()
+        summary = ctk.CTkLabel(self.content_frame, text="Docker is installed and working" if self.dockerInstalled else "Docker not installed")
+        summary.pack()
+        if windows:
+            summary = ctk.CTkLabel(self.content_frame, text="wsl is installed and working" if self.wslInstalled else "wsl not installed")
+            summary.pack()
+        
 
     def page_complete(self):
         label = ctk.CTkLabel(self.content_frame, text="Installation Complete", font=ctk.CTkFont(size=20, weight="bold"))
@@ -165,6 +176,40 @@ class WizardApp(ctk.CTk):
 
         complete_message = ctk.CTkLabel(self.content_frame, text="The installation was successful!")
         complete_message.pack()
+
+    def doChecks(self, windows):
+        gitInstalled = False
+        dockerInstalled = False
+        wslInstalled = False
+
+        if windows:
+            try:
+                ans = subprocess.Popen(["wsl", "cat", "/proc/version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                output, errors = ans.communicate()
+                match = re.search(r'WSL(\d+)', output)
+                if int(match.group(1)) == 2:
+                    wslInstalled = True
+            except:
+                pass
+        
+        try:
+            ans = subprocess.Popen(["git", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            output, errors = ans.communicate()
+            gitInstalled = True
+        except:
+            pass
+
+        try:
+            ans = subprocess.Popen(["docker", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            output, errors = ans.communicate()
+            match = re.search(r'(\d+)\.', output)
+            if int(match.group(1)) >= 24:
+                dockerInstalled = True
+        except:
+            pass
+
+        return windows, gitInstalled, dockerInstalled, wslInstalled
+
 
 if __name__ == "__main__":
     app = WizardApp()
