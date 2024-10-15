@@ -12,7 +12,7 @@ class WizardApp(ctk.CTk):
 
         # Window properties
         self.title("Fancy Wizard Window with Progress Sidebar")
-        self.geometry("960x600")  # Adjust width to accommodate sidebar
+        self.geometry("700x400")  # Adjust width to accommodate sidebar
 
         # Step counter to track the current step
         self.current_step = 0
@@ -28,9 +28,6 @@ class WizardApp(ctk.CTk):
         # Main layout: Create two main frames (Sidebar and Content)
         self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar_frame.pack(side="left", fill="y")
-
-        self.terminal_frame = ctk.CTkFrame(self, corner_radius=10)
-        self.terminal_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
         
         self.content_frame = ctk.CTkFrame(self, corner_radius=10)
         self.content_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
