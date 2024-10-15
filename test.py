@@ -35,15 +35,11 @@ class WizardApp(ctk.CTk):
 
         # Sidebar content (step labels)
         self.sidebar_label = ctk.CTkLabel(self.sidebar_frame, text="Steps", font=ctk.CTkFont(size=16, weight="bold"))
-        self.sidebar_label.pack(pady=15)
-
-        # Terminal content example
-        self.terminal_label = ctk.CTkLabel(self.sidebar_frame, text="Steps", font=ctk.CTkFont(size=16, weight="bold"))
         self.sidebar_label.pack(pady=10)
 
         # Step labels in the sidebar
         self.step_labels = []
-        for i in range(len(self.pages)):
+        for i in range(len(self.pages)-1):
             step_label = ctk.CTkLabel(self.sidebar_frame, text=f"Step {i+1}", font=ctk.CTkFont(size=14))
             step_label.pack(pady=10)
             self.step_labels.append(step_label)
@@ -84,24 +80,31 @@ class WizardApp(ctk.CTk):
         # Show the current step page
         self.pages[self.current_step]()
     
+    # def show_first_page(self):
+    #     self.current_step += 1
+    #     self.step_labels[self.current_step].configure(text_color="cyan")
+    #     if self.current_step == 1 and self.host_var.get() == 0:
+    #         self.next_button.configure(state="disabled")
+    #     self.show_page()
+    
     def next_page(self):
-        self.step_labels[self.current_step].configure(text_color="white")
+        if(self.current_step != 0):
+            self.step_labels[self.current_step-1].configure(text_color="white")
         self.current_step += 1
-        self.step_labels[self.current_step].configure(text_color="cyan")
+        self.step_labels[self.current_step-1].configure(text_color="cyan")
 
         if self.current_step == len(self.pages) - 1:
             self.next_button.configure(text="Finish", command=self.finish)
         self.back_button.configure(state="normal")
-
         if self.current_step == 1 and self.host_var.get() == 0:
             self.next_button.configure(state="disabled")
 
         self.show_page()
 
     def prev_page(self):
-        self.step_labels[self.current_step].configure(text_color="white")
+        self.step_labels[self.current_step-1].configure(text_color="white")
         self.current_step -= 1
-        self.step_labels[self.current_step].configure(text_color="cyan")
+        self.step_labels[self.current_step-1].configure(text_color="cyan")
 
         if self.current_step == 0:
             self.back_button.configure(state="disabled")
@@ -117,7 +120,6 @@ class WizardApp(ctk.CTk):
 
     # Define each page
     def page_welcome(self):
-        self.step_labels[self.current_step].configure(text_color="cyan")
         label = ctk.CTkLabel(self.content_frame, text="Welcome to the Installation Wizard", font=ctk.CTkFont(size=20, weight="bold"))
         label.pack(pady=50)
 
