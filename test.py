@@ -1,4 +1,4 @@
-from tkinter import messagebox,IntVar,PhotoImage
+from tkinter import messagebox,IntVar,PhotoImage,StringVar
 import customtkinter as ctk
 from PIL import Image
 # Initialize the CustomTkinter theme
@@ -20,17 +20,17 @@ class WizardApp(ctk.CTk):
         self.pages = [
             self.page_welcome,
             self.page_host_system,
-            self.page_installation_directory,
+            self.page_git_password,
             self.page_summary,
             self.page_complete
         ]
 
         # Main layout: Create two main frames (Sidebar and Content)
-        self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
-        self.sidebar_frame.pack(side="left", fill="y")
+        self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=10)
+        self.sidebar_frame.pack(side="left", fill="y", padx=10, pady=10)
         
         self.content_frame = ctk.CTkFrame(self, corner_radius=10)
-        self.content_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
+        self.content_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
 
 
@@ -139,19 +139,24 @@ class WizardApp(ctk.CTk):
     def toggle_RadioButton(self):
         self.next_button.configure(state="normal")
 
-    def page_installation_directory(self):
-        label = ctk.CTkLabel(self.content_frame, text="Choose installation directory", font=ctk.CTkFont(size=18))
+    def page_git_password(self):
+        label = ctk.CTkLabel(self.content_frame, text="Please enter your password for the ACROBA Platform", font=ctk.CTkFont(size=18))
         label.pack(pady=10)
+        password = StringVar()
 
-        dir_entry = ctk.CTkEntry(self.content_frame, width=400)
-        dir_entry.insert(0, "C:/Program Files/MyApp")
+        dir_entry = ctk.CTkEntry(self.content_frame, textvariable=password, show="*")
+        dir_entry.insert(0, "")
         dir_entry.pack(pady=10)
 
     def page_summary(self):
         label = ctk.CTkLabel(self.content_frame, text="Ready to Install", font=ctk.CTkFont(size=18))
         label.pack(pady=50)
+        if(self.host_var.get()==1):
+            host="Windows"
+        else:
+            host="Linux"
 
-        summary = ctk.CTkLabel(self.content_frame, text="Installation directory: C:/Program Files/MyApp")
+        summary = ctk.CTkLabel(self.content_frame, text=f"Selected host system: {host}")
         summary.pack()
 
     def page_complete(self):
