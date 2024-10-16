@@ -4,6 +4,7 @@ from tkinter import messagebox,IntVar,PhotoImage,StringVar
 import customtkinter as ctk
 from PIL import Image
 import os
+import time
 
 # Initialize the CustomTkinter theme
 ctk.set_appearance_mode("Light")  # Options: "Light" or "Dark"
@@ -26,6 +27,7 @@ class WizardApp(ctk.CTk):
             self.page_host_system,
             self.page_git_password,
             self.page_summary,
+            self.notInstalledProgramm_installer,
             self.clonePassword,
             self.page_complete
         ]
@@ -126,6 +128,14 @@ class WizardApp(ctk.CTk):
         messagebox.showinfo("Installation Complete", "The installation was successful!")
         self.quit()
 
+
+
+
+    #------------------------------------------#
+    #               rkinrwe windows           #
+    #------------------------------------------#
+
+
     # Define each page
     def page_welcome(self):
         label = ctk.CTkLabel(self.content_frame, text="Welcome to the Installation Wizard", font=ctk.CTkFont(size=20, weight="bold"))
@@ -172,14 +182,47 @@ class WizardApp(ctk.CTk):
             summary.pack()
 
     def notInstalledProgramm_installer(self):
+        label = ctk.CTkLabel(self.content_frame, text="oops, something is missing", font=ctk.CTkFont(size=18))
+        label.pack(pady=15)
+
+        # Terminal outputs are shown here
+        result_text = ctk.CTkTextbox(self.content_frame, height=100, width=320, state="disable")
+        result_text.pack(pady=2)
+
         if not self.gitInstalled:
+
+
+
+            label = ctk.CTkLabel(self.content_frame, text="password of your system bellow")
+            label.pack(pady=4)
+
+            textBox = ctk.CTkEntry(self.content_frame, show="*")
+            textBox.pack(pady=10)
+                        
+            # Button for cloning
+            button = ctk.CTkButton(self.content_frame, text="install git", state="disable" if self.gitInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("sudo apt install  --progress git", result_text))
+            button.pack(pady=10)
+
+            result_text.update_idletasks()
             
-            pass
         if not self.dockerInstalled:
-            pass
-        if not self.wslInstalled:
-            pass
+            button = ctk.CTkButton(self.content_frame, text="install docker", state="disable" if self.gitInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("sudo apt install --progress docker", result_text))
+            button.pack(pady=10)
+                
+            result_text.update_idletasks()
+            
+        # if not self.wslInstalled:
+        #     pass
         pass
+
+    #   # Button for cloning
+    #     button = ctk.CTkButton(self.content_frame, text="install git", state="disable" if self.gitInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("sudo apt install  --progress git", result_text))
+    #     button.pack(pady=10)
+
+
+    #     # Button for cloning
+    #     button = ctk.CTkButton(self.content_frame, text="install docker", state="disable" if self.dockerInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("git clone --progress https://github.com/acroba-hackathon/setup.git", result_text))
+    #     button.pack(pady=10)
 
 
     def clonePassword(self):
@@ -190,6 +233,13 @@ class WizardApp(ctk.CTk):
         # Terminal outputs are shown here
         result_text = ctk.CTkTextbox(self.content_frame, height=100, width=320, state="disable")
         result_text.pack(pady=2)
+
+      
+
+
+        # # Button for cloning
+        # button = ctk.CTkButton(self.content_frame, text="install wsl", font=ctk.CTkFont(size=18), command =lambda: self.pathexist("git clone --progress https://github.com/acroba-hackathon/setup.git", result_text))
+        # button.pack(pady=10)
 
         # Button for cloning
         button = ctk.CTkButton(self.content_frame, text="pull git repository and enter password", font=ctk.CTkFont(size=18), command =lambda: self.pathexist("git clone --progress https://github.com/acroba-hackathon/setup.git", result_text))
@@ -207,7 +257,14 @@ class WizardApp(ctk.CTk):
 
         complete_message = ctk.CTkLabel(self.content_frame, text="The installation was successful!")
         complete_message.pack()
+    
 
+
+
+
+    #------------------------------------------#
+    #               chek certification          #
+    #------------------------------------------#
 
     # Checking 
     def gitCheck(self, windows):
@@ -251,6 +308,13 @@ class WizardApp(ctk.CTk):
         return False
 
 
+
+
+    #------------------------------------------#
+    #               command execution          #
+    #------------------------------------------#
+
+
     def pathexist(self,command, result_text):
         path = "setup"
         
@@ -290,6 +354,11 @@ class WizardApp(ctk.CTk):
 
         result_text.configure(state="disable")
 
+
+
+    #------------------------------------------#
+    #               main and stuff            #
+    #------------------------------------------#
 
 if __name__ == "__main__":
     app = WizardApp()
