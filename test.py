@@ -214,7 +214,7 @@ class WizardApp(ctk.CTk):
             textBox.pack(pady=10)
                         
             # Button for cloning
-            button = ctk.CTkButton(self.content_frame, text="install git", state="disable" if self.gitInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("sudo apt install  --progress git", result_text))
+            button = ctk.CTkButton(self.content_frame, text="install git", state="disable" if self.gitInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command(f"echo {textBox.get()} | sudo -S apt install git", result_text))
             button.pack(pady=10)
 
             result_text.update_idletasks()
@@ -347,24 +347,17 @@ class WizardApp(ctk.CTk):
         result_text.configure(state="normal")
         result_text.delete(1.0, ctk.END)
 
-        # Use Popen with unbuffered output for real-time capturing
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, universal_newlines=True)
         
-        # Capture stdout in real-time
-        for stdout_line in iter(process.stderr.readline, ""):
-            print(stdout_line)
-            result_text.insert(ctk.END, stdout_line)  # Insert the output into the text widget
+        # Capture combined stdout and stderr in real-time
+        for output_line in iter(process.stdout.readline, ""):
+            print(output_line)
+            result_text.insert(ctk.END, output_line)  # Insert the output into the text widget
             result_text.see(ctk.END)  # Scroll to the end of the text widget
             result_text.update_idletasks()  # Force GUI update
 
         process.stdout.close()
-
-        # Capture any remaining stderr (errors)
-        stderr_output, _ = process.communicate()
-        if stderr_output:
-            result_text.insert(ctk.END, stderr_output)  # Insert errors into the text widget
-            result_text.see(ctk.END)
-            result_text.update_idletasks()  # Force GUI update
+        process.wait()  # Ensure the process has fully completed
 
         result_text.configure(state="disable")
 
