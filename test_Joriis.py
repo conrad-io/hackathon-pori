@@ -2,7 +2,9 @@ import re
 import subprocess
 from tkinter import messagebox,IntVar,PhotoImage,StringVar
 import customtkinter as ctk
+from PIL import Image
 import os
+import time
 
 # Initialize the CustomTkinter theme
 ctk.set_appearance_mode("Light")  # Options: "Light" or "Dark"
@@ -11,6 +13,10 @@ ctk.set_default_color_theme("dark-blue")  # Other options: "green", "dark-blue"
 class WizardApp(ctk.CTk):
     def __init__(self):
         super().__init__()
+
+        sudopass = ""
+        acrobapass = ""
+
         self.host_var = IntVar(value=0)
         # Window properties
         # self.iconbitmap("cropped-ACROBA_logo_icon_RVB-32x32.ico")
@@ -25,9 +31,8 @@ class WizardApp(ctk.CTk):
             self.page_host_system,
             self.page_git_password,
             self.page_summary,
-            self.page_install,
-            #self.notInstalledProgramm_installer,
-            #self.clonePassword,
+            self.notInstalledProgramm_installer,
+            self.clonePassword,
             self.page_complete
         ]
 
@@ -154,13 +159,24 @@ class WizardApp(ctk.CTk):
         self.next_button.configure(state="normal")
 
     def page_git_password(self):
-        label = ctk.CTkLabel(self.content_frame, text="Please enter your password for the ACROBA Platform", font=ctk.CTkFont(size=18))
-        label.pack(pady=10)
-        password = StringVar()
+        # label = ctk.CTkLabel(self.content_frame, text="Please enter your password for the ACROBA Plattform", font=ctk.CTkFont(size=18))
+        # label.pack(pady=10)
+        # password = StringVar()
 
-        dir_entry = ctk.CTkEntry(self.content_frame, textvariable=password, show="*")
-        dir_entry.insert(0, "")
-        dir_entry.pack(pady=10)
+        # dir_entry = ctk.CTkEntry(self.content_frame, textvariable=password, show="*")
+        # dir_entry.insert(0, "")
+        # dir_entry.pack(pady=10)
+
+
+
+        
+        label2 = ctk.CTkLabel(self.content_frame, text="Please enter your sudo-user-password", font=ctk.CTkFont(size=18))
+        label2.pack(pady=10)
+        self.password = StringVar()
+
+        self.tempsudopass = ctk.CTkEntry(self.content_frame, textvariable=self.password, show="*")
+        self.tempsudopass.insert(0, "")
+        self.tempsudopass.pack(pady=10)
 
     def page_summary(self):
         windows = self.host_var.get()==1
@@ -179,24 +195,9 @@ class WizardApp(ctk.CTk):
         if windows:
             summary = ctk.CTkLabel(self.content_frame, text="wsl is installed and working" if self.wslInstalled else "wsl not installed")
             summary.pack()
-    def page_install(self):
-        result_text = ctk.CTkTextbox(self.content_frame, height=100, width=320, state="disable")
-        result_text.pack(pady=2)
-
-        self.run_command("sudo apt install git", result_text) # evtl. password?
-        self.run_command("curl -sSL https://get.docker.com/ | sh")
-        self.run_command("sudo usermod -aG docker $USER") # evtl. password
-        self.run_command("git clone --progress https://github.com/acroba-hackathon/setup.git")
-        self.run_command("cd setup")
-        self.run_command("sudo apt install -y build-essential")
-
-
-
-
-
 
     def notInstalledProgramm_installer(self):
-        label = ctk.CTkLabel(self.content_frame, text="oops, something is missing", font=ctk.CTkFont(size=18))
+        label = ctk.CTkLabel(self.content_frame, text="everything is installed" if self.dockerInstalled and self.gitInstalled else "normal", font=ctk.CTkFont(size=18))
         label.pack(pady=15)
 
         # Terminal outputs are shown here
@@ -204,27 +205,17 @@ class WizardApp(ctk.CTk):
         result_text.pack(pady=2)
 
         if not self.gitInstalled:
-
-
-
-            label = ctk.CTkLabel(self.content_frame, text="password of your system bellow")
-            label.pack(pady=4)
-
-            textBox = ctk.CTkEntry(self.content_frame, show="*")
-            textBox.pack(pady=10)
-                        
+            
             # Button for cloning
-            button = ctk.CTkButton(self.content_frame, text="install git", state="disable" if self.gitInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("sudo apt install  --progress git", result_text))
+            button = ctk.CTkButton(self.content_frame, text="install git", state="disable" if self.gitCheck(windows = self.host_var.get()==1) else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command(f"echo {self.password.get()} | sudo -S apt install git", result_text))
             button.pack(pady=10)
-
-            result_text.update_idletasks()
             
         if not self.dockerInstalled:
-            button = ctk.CTkButton(self.content_frame, text="install docker", state="disable" if self.gitInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("sudo apt install --progress docker", result_text))
-            button.pack(pady=10)
-                
+            button = ctk.CTkButton(self.content_frame, text="install docker", state="disable" if self.dockerInstalled else "normal", font=ctk.CTkFont(size=18), command =lambda: self.run_command("sudo apt install --progress docker", result_text))
+            button.pack(pady=10)        
             result_text.update_idletasks()
-            
+        
+
         # if not self.wslInstalled:
         #     pass
         pass
@@ -260,8 +251,13 @@ class WizardApp(ctk.CTk):
         button.pack(pady=10)
 
         # Button for installation
-        button2 = ctk.CTkButton(self.content_frame, text="pinstall acroba enviornment", font=ctk.CTkFont(size=18), command =lambda: self.run_command("echo y | setup/setup.sh", result_text))
+        button2 = ctk.CTkButton(self.content_frame, text="install acroba enviornment", font=ctk.CTkFont(size=18), command =lambda: self.run_command("echo y | setup/setup.sh", result_text))
         button2.pack(pady=10)
+
+
+        button3 = ctk.CTkButton(self.content_frame, text="verify correct installation", font=ctk.CTkFont(size=18), command =lambda: self.run_command("echo y | setup/setup.sh --clean-code", result_text))
+        button3.pack(pady=10)
+        
 
         
 
@@ -279,6 +275,14 @@ class WizardApp(ctk.CTk):
     #------------------------------------------#
     #               chek certification          #
     #------------------------------------------#
+
+    def validate(self, password, label):
+        checkString = str(print(self.run_command_toStr(f"echo {password} sudo test")))
+        if "Sorry, try again." in checkString:
+            label.configure(text="not valid")
+        else:
+            print("üü")
+            label.configure(text="valid")
 
     # Checking 
     def gitCheck(self, windows):
@@ -344,30 +348,39 @@ class WizardApp(ctk.CTk):
         self.run_command(command, result_text)
 
     def run_command(self, command, result_text):
+        print(command)
         result_text.configure(state="normal")
         result_text.delete(1.0, ctk.END)
 
-        # Use Popen with unbuffered output for real-time capturing
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, universal_newlines=True)
         
-        # Capture stdout in real-time
-        for stdout_line in iter(process.stderr.readline, ""):
-            print(stdout_line)
-            result_text.insert(ctk.END, stdout_line)  # Insert the output into the text widget
+        # Capture combined stdout and stderr in real-time
+        for output_line in iter(process.stdout.readline, ""):
+            print(output_line)
+            result_text.insert(ctk.END, output_line)  # Insert the output into the text widget
             result_text.see(ctk.END)  # Scroll to the end of the text widget
             result_text.update_idletasks()  # Force GUI update
 
         process.stdout.close()
-
-        # Capture any remaining stderr (errors)
-        stderr_output, _ = process.communicate()
-        if stderr_output:
-            result_text.insert(ctk.END, stderr_output)  # Insert errors into the text widget
-            result_text.see(ctk.END)
-            result_text.update_idletasks()  # Force GUI update
+        process.wait()  # Ensure the process has fully completed
 
         result_text.configure(state="disable")
 
+    def run_command_toStr(self, command)-> str:
+        returnableString = ""
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, universal_newlines=True)
+        
+
+        # Capture combined stdout and stderr in real-time
+        for output_line in iter(process.stdout.readline, ""):
+            print(output_line)
+            returnableString = returnableString + output_line  # Insert the output into the text   
+
+        process.stdout.close()
+        process.wait()  # Ensure the process has fully completed
+
+        return returnableString
+        
 
 
     #------------------------------------------#
